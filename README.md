@@ -4,6 +4,16 @@ ResearchMate is a prototype academic research planning agent. It receives a user
 
 This implementation is based on the earlier ResearchMate design proposal, but it simplifies the infrastructure to keep the system reproducible, testable, and suitable for individual demonstration.
 
+## Screenshots
+
+### Execution Evidence
+
+![Execution showing saved outputs](screenshots/execution_saved_outputs.png)
+
+### Test Results
+
+![Test results showing 9 passing tests](screenshots/test_results.png)
+
 ## Project Purpose
 
 The purpose of ResearchMate is to support structured academic research and information gathering. The system is designed to demonstrate autonomous agent behaviour by completing the following sequence:
