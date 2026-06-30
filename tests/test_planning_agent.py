@@ -1,5 +1,7 @@
-from models import ResearchContext
-from agents.planning_agent import create_plan
+import pytest
+
+from models import ResearchContext, ResearchPlan
+from agents.planning_agent import create_plan, create_fallback_plan
 
 
 def test_create_plan_returns_research_plan():
@@ -12,11 +14,30 @@ def test_create_plan_returns_research_plan():
 
     plan = create_plan(context)
 
+    assert isinstance(plan, ResearchPlan)
     assert plan.query == "AI tutors in higher education"
     assert plan.purpose == "course design"
     assert plan.audience_level == "masters"
     assert len(plan.steps) > 0
-    assert "Retrieve academic papers" in " ".join(plan.steps)
+    assert "Planning mode:" in plan.steps[0]
+
+
+def test_fallback_plan_contains_core_pipeline_steps():
+    context = ResearchContext(
+        query="AI tutors in higher education",
+        purpose="course design",
+        audience_level="masters",
+        requested_papers=10,
+    )
+
+    steps = create_fallback_plan(context)
+    joined_steps = " ".join(steps).lower()
+
+    assert "retrieve" in joined_steps
+    assert "process" in joined_steps
+    assert "rank" in joined_steps
+    assert "save" in joined_steps
+    assert "semantic scholar" in joined_steps
 
 
 def test_create_plan_rejects_empty_query():
@@ -27,8 +48,5 @@ def test_create_plan_rejects_empty_query():
         requested_papers=10,
     )
 
-    try:
+    with pytest.raises(ValueError):
         create_plan(context)
-        assert False, "Expected ValueError for empty query"
-    except ValueError:
-        assert True

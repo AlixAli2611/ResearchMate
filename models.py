@@ -39,6 +39,8 @@ class Paper(BaseModel):
     url: str
     published: Optional[str] = None
     source: str = "arXiv"
+    citation_count: Optional[int] = None
+    publication_type: Optional[str] = None
 
 
 class ProcessedPaper(BaseModel):
@@ -48,8 +50,11 @@ class ProcessedPaper(BaseModel):
     title: str
     summary: str
     key_terms: List[str]
+    paper_type: str
     url: str
     source: str
+    citation_count: Optional[int] = None
+    publication_type: Optional[str] = None
 
 
 class RankedPaper(ProcessedPaper):

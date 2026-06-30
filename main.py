@@ -83,7 +83,7 @@ def main() -> None:
     print("\n" + retrieval_note)
 
     print("\nProcessing retrieved papers...")
-    processed_papers = process_papers(papers)
+    processed_papers = process_papers(papers, context)
 
     print("\nRanking papers by relevance to your topic, purpose, and audience...")
     ranked_papers = rank_papers(context, processed_papers)
@@ -94,6 +94,9 @@ def main() -> None:
         print(f"\n{index}. {paper.title}")
         print(f"   Relevance score: {paper.relevance_score}/10")
         print(f"   Reason: {paper.relevance_reason}")
+        print(f"   Paper type: {paper.paper_type}")
+        print(f"   Source: {paper.source}")
+        print(f"   Citation count: {paper.citation_count if paper.citation_count is not None else 'Not available'}")
         print(f"   Summary: {paper.summary}")
         print(f"   Key terms: {', '.join(paper.key_terms)}")
         print(f"   URL: {paper.url}")

@@ -1,200 +1,188 @@
 {
-  "query": "AI tutors in higher education",
-  "purpose": "course design",
-  "audience_level": "masters",
-  "requested_papers": 10,
+  "query": "Effects of screen usage on students k-8",
+  "purpose": "background research",
+  "audience_level": "general public",
+  "requested_papers": 8,
   "plan": [
-    "Clarify the research goal: AI tutors in higher education.",
-    "Interpret the research purpose as: course design.",
-    "Consider the intended level or audience: masters.",
-    "Retrieve academic papers related to the topic from arXiv.",
-    "Process each retrieved paper by creating a source-level summary.",
-    "Rank papers using query match, purpose match, academic usefulness, and source completeness.",
-    "Check whether the retrieved evidence appears consistent, limited, or mixed.",
-    "Save the final research briefing as Markdown and JSON outputs."
+    "Planning mode: LLM-powered planning through Groq/Llama.",
+    "Define search terms and databases for retrieving relevant studies on the effects of screen usage on students K-8",
+    "Retrieve 8 research papers from academic databases such as JSTOR, ERIC, and PubMed",
+    "Process the retrieved papers by extracting key information, including methodology, sample size, and findings",
+    "Rank the papers based on relevance, credibility, and publication date to ensure the most accurate and up-to-date information",
+    "Assess the evidence presented in the papers, evaluating the strengths and limitations of each study",
+    "Synthesize the findings from the ranked papers to identify patterns, trends, and areas of consensus",
+    "Save the output in a format suitable for general public consumption, such as a concise summary or infographic highlighting the key effects of screen usage on students K-8"
   ],
-  "retrieval_note": "Retrieval note: The system retrieved the requested number of papers (10/10).",
-  "evidence_note": "Evidence appears strong for the purpose of course design at the masters level. Several retrieved papers closely match the topic and purpose. Source-level summaries are still preserved for human review.",
+  "retrieval_note": "Retrieval note: The system retrieved the requested number of papers (8/8) using: arXiv.\n\nRetrieval warnings:\n- Semantic Scholar failed: 429 Client Error:  for url: https://api.semanticscholar.org/graph/v1/paper/search?query=Effects+of+screen+usage+on+students+k-8&limit=8&fields=title%2Cabstract%2Curl%2Cyear%2Cauthors%2CcitationCount%2CpublicationTypes",
+  "evidence_note": "Evidence appears moderately useful for the purpose 'background research' at the 'general public' level. Some sources are relevant, but the user should review the original papers and consider additional searches before drawing strong conclusions.",
   "ranked_papers": [
     {
-      "title": "AI & Data Competencies: Scaffolding holistic AI literacy in Higher Education",
-      "summary": "This chapter introduces the AI & Data Acumen Learning Outcomes Framework, a comprehensive tool designed to guide the integration of AI literacy across higher education. Developed through a collaborative process, the framework defines key AI and data-related competencies across four proficiency levels and seven knowledge dimensions.",
+      "title": "The Evolving Usage of GenAI by Computing Students",
+      "summary": "Help-seeking is a critical aspect of learning and problem-solving for computing students. Recent research has shown that many students are aware of generative AI (GenAI) tools; however, there are gaps in the extent and effectiveness of how students use them.",
       "key_terms": [
-        "competencies",
-        "scaffolding",
-        "holistic",
-        "literacy",
-        "higher",
-        "education",
-        "acumen",
-        "learning"
-      ],
-      "url": "http://arxiv.org/abs/2510.24783v1",
-      "source": "arXiv",
-      "relevance_score": 9,
-      "relevance_reason": "Score based on query match 4/4, purpose match 3/3, audience match 1/2, source completeness 1/1."
-    },
-    {
-      "title": "Do AI tutors empower or enslave learners? Toward a critical use of AI in education",
-      "summary": "The increasing integration of AI tools in education presents both opportunities and challenges, particularly regarding the development of the students' critical thinking skills. This position paper argues that while AI can support learning, its unchecked use may lead to cognitive atrophy, loss of agency, emotional risks, and ethical concerns, ultimately undermining the core goals of education.",
-      "key_terms": [
-        "tutors",
-        "empower",
-        "enslave",
-        "learners",
-        "toward",
+        "evolving",
+        "usage",
+        "genai",
+        "computing",
+        "students",
+        "helpseeking",
         "critical",
-        "education",
-        "increasing"
+        "aspect"
       ],
-      "url": "http://arxiv.org/abs/2507.06878v1",
+      "paper_type": "Review / survey paper",
+      "url": "http://arxiv.org/abs/2412.16453v1",
       "source": "arXiv",
-      "relevance_score": 8,
-      "relevance_reason": "Score based on query match 4/4, purpose match 3/3, audience match 0/2, source completeness 1/1."
-    },
-    {
-      "title": "Developing Strategies to Increase Capacity in AI Education",
-      "summary": "Many institutions are currently grappling with teaching artificial intelligence (AI) in the face of growing demand and relevance in our world. The Computing Research Association (CRA) has conducted 32 moderated virtual roundtable discussions of 202 experts committed to improving AI education.",
-      "key_terms": [
-        "developing",
-        "strategies",
-        "increase",
-        "capacity",
-        "education",
-        "institutions",
-        "currently",
-        "grappling"
-      ],
-      "url": "http://arxiv.org/abs/2509.21713v1",
-      "source": "arXiv",
-      "relevance_score": 7,
-      "relevance_reason": "Score based on query match 3/4, purpose match 2/3, audience match 1/2, source completeness 1/1."
-    },
-    {
-      "title": "Defining a Strategic Action Plan for AI in Higher Education",
-      "summary": "This paper discusses key challenges of Artificial Intelligence in Education, with main focus on higher education institutions. We start with reviewing normative actions of international organizations and concerns expressed about the current technical landscape.",
-      "key_terms": [
-        "defining",
-        "strategic",
-        "action",
-        "higher",
-        "education",
-        "challenges",
-        "artificial",
-        "intelligence"
-      ],
-      "url": "http://arxiv.org/abs/2510.03343v1",
-      "source": "arXiv",
+      "citation_count": null,
+      "publication_type": null,
       "relevance_score": 6,
-      "relevance_reason": "Score based on query match 4/4, purpose match 1/3, audience match 0/2, source completeness 1/1."
+      "relevance_reason": "Score based on query match 2/4, purpose match 1/3, audience match 1/1, paper type fit 1/1, source completeness 1/1."
     },
     {
-      "title": "Exploring utilization of generative AI for research and education in data-driven materials science",
-      "summary": "Generative AI has recently had a profound impact on various fields, including daily life, research, and education. To explore its efficient utilization in data-driven materials science, we organized a hackathon -- AIMHack2024 -- in July 2024.",
+      "title": "The mobile devices and its mobile learning usage analysis",
+      "summary": "The usage of mobile devices for mobile learning is becoming increasingly popular. There is a new brand of students in the universities now-a-days who are easily connected to technology and innovative mobile devices.",
       "key_terms": [
-        "exploring",
-        "utilization",
-        "generative",
-        "research",
-        "education",
-        "datadriven",
-        "materials",
-        "science"
-      ],
-      "url": "http://arxiv.org/abs/2504.08817v2",
-      "source": "arXiv",
-      "relevance_score": 6,
-      "relevance_reason": "Score based on query match 3/4, purpose match 1/3, audience match 1/2, source completeness 1/1."
-    },
-    {
-      "title": "Creating Experience value to build student satisfaction in higher education",
-      "summary": "Higher education products or services received by students are experiential values. The purpose of this study is how to create the values of student experience so that student satisfaction arises.",
-      "key_terms": [
-        "creating",
-        "experience",
-        "value",
-        "build",
-        "student",
-        "satisfaction",
-        "higher",
-        "education"
-      ],
-      "url": "http://arxiv.org/abs/2006.09846v1",
-      "source": "arXiv",
-      "relevance_score": 6,
-      "relevance_reason": "Score based on query match 3/4, purpose match 2/3, audience match 0/2, source completeness 1/1."
-    },
-    {
-      "title": "Cinema, Fermi Problems, & General Education",
-      "summary": "During the past several years the authors have developed a new approach to the teaching of Physical Science, a general education course typically found in the curricula of nearly every college and university. This approach, called `Physics in Films', uses scenes from popular movies to illustrate physical principles and has excited student interest and improved student performance.",
-      "key_terms": [
-        "cinema",
-        "fermi",
-        "problems",
-        "general",
-        "education",
-        "several",
-        "authors",
-        "teaching"
-      ],
-      "url": "http://arxiv.org/abs/physics/0608058v2",
-      "source": "arXiv",
-      "relevance_score": 6,
-      "relevance_reason": "Score based on query match 2/4, purpose match 3/3, audience match 0/2, source completeness 1/1."
-    },
-    {
-      "title": "Need of AI in Modern Education: in the Eyes of Explainable AI (xAI)",
-      "summary": "Modern Education is not \\textit{Modern} without AI. However, AI's complex nature makes understanding and fixing problems challenging.",
-      "key_terms": [
-        "modern",
-        "education",
-        "explainable",
-        "complex",
-        "understanding",
-        "fixing",
-        "problems",
-        "challenging"
-      ],
-      "url": "http://arxiv.org/abs/2408.00025v3",
-      "source": "arXiv",
-      "relevance_score": 5,
-      "relevance_reason": "Score based on query match 3/4, purpose match 1/3, audience match 0/2, source completeness 1/1."
-    },
-    {
-      "title": "AI Conversational Tutors in Foreign Language Learning: A Mixed-Methods Evaluation Study",
-      "summary": "This paper focuses on AI tutors in foreign language learning, a field of application of AI tutors with great development, especially during the last years, when great advances in natural language understanding and processing in real time, have been achieved. These tutors attempt to address needs for improving language skills (speaking, or communicative competence, understanding).",
-      "key_terms": [
-        "conversational",
-        "tutors",
-        "foreign",
-        "language",
+        "mobile",
+        "devices",
         "learning",
-        "mixedmethods",
-        "evaluation",
-        "focuses"
+        "usage",
+        "becoming",
+        "increasingly",
+        "popular",
+        "there"
       ],
-      "url": "http://arxiv.org/abs/2508.05156v1",
+      "paper_type": "Review / survey paper",
+      "url": "http://arxiv.org/abs/1410.4375v1",
       "source": "arXiv",
+      "citation_count": null,
+      "publication_type": null,
       "relevance_score": 5,
-      "relevance_reason": "Score based on query match 3/4, purpose match 1/3, audience match 0/2, source completeness 1/1."
+      "relevance_reason": "Score based on query match 2/4, purpose match 0/3, audience match 1/1, paper type fit 1/1, source completeness 1/1."
     },
     {
-      "title": "Twelve Years of Education and Public Outreach with the Fermi Gamma-ray Space Telescope",
-      "summary": "During the past twelve years, NASA's Fermi Gamma-ray Space Telescope has supported a wide range of Education and Public Outreach (E/PO) activities, targeting K-14 students and the general public. The purpose of the Fermi E/PO program is to increase student and public understanding of the science of the high-energy Universe, through inspiring, engaging and educational activities linked to the mission's science objectives.",
+      "title": "Surveying Turkish high school and university student attitudes and approaches to physics problem solving",
+      "summary": "Student attitudes and approaches to problem solving can impact how well they learn physics. Prior research in the US using a validated Attitude and Approaches to Problem Solving (AAPS) survey suggests that there are major differences between students in introductory physics and astronomy courses and physics experts in terms of their attitudes and approaches to physics problem solving.",
       "key_terms": [
-        "twelve",
-        "education",
-        "public",
-        "outreach",
-        "fermi",
-        "gammaray",
-        "space",
-        "telescope"
+        "surveying",
+        "turkish",
+        "school",
+        "university",
+        "student",
+        "attitudes",
+        "approaches",
+        "physics"
       ],
-      "url": "http://arxiv.org/abs/1303.0042v1",
+      "paper_type": "Review / survey paper",
+      "url": "http://arxiv.org/abs/1604.02620v1",
       "source": "arXiv",
+      "citation_count": null,
+      "publication_type": null,
+      "relevance_score": 5,
+      "relevance_reason": "Score based on query match 1/4, purpose match 1/3, audience match 1/1, paper type fit 1/1, source completeness 1/1."
+    },
+    {
+      "title": "Toolboxes and handing students a hammer: The effects of cueing and instruction on getting students to think critically",
+      "summary": "Developing critical thinking skills is a common goal of an undergraduate physics curriculum. How do students make sense of evidence and what do they do with it? In this study, we evaluated students' critical thinking behaviors through their written notebooks in an introductory physics laboratory course.",
+      "key_terms": [
+        "toolboxes",
+        "handing",
+        "students",
+        "hammer",
+        "effects",
+        "cueing",
+        "instruction",
+        "getting"
+      ],
+      "paper_type": "Unknown / unclear from abstract",
+      "url": "http://arxiv.org/abs/1703.07017v1",
+      "source": "arXiv",
+      "citation_count": null,
+      "publication_type": null,
       "relevance_score": 4,
-      "relevance_reason": "Score based on query match 1/4, purpose match 2/3, audience match 0/2, source completeness 1/1."
+      "relevance_reason": "Score based on query match 2/4, purpose match 1/3, audience match 0/1, paper type fit 0/1, source completeness 1/1."
+    },
+    {
+      "title": "Trends in Students Media Usage",
+      "summary": "Trends in media usage by students can affect the way they learn. Students demand the use of technology, thus institutions and instructors should meet students requests.",
+      "key_terms": [
+        "trends",
+        "students",
+        "media",
+        "usage",
+        "affect",
+        "learn",
+        "demand",
+        "technology"
+      ],
+      "paper_type": "Review / survey paper",
+      "url": "http://arxiv.org/abs/1612.00733v1",
+      "source": "arXiv",
+      "citation_count": null,
+      "publication_type": null,
+      "relevance_score": 4,
+      "relevance_reason": "Score based on query match 2/4, purpose match 0/3, audience match 0/1, paper type fit 1/1, source completeness 1/1."
+    },
+    {
+      "title": "Generative AI Usage of University Students: Navigating Between Education and Business",
+      "summary": "This study investigates generative artificial intelligence (GenAI) usage of university students who study alongside their professional career. Previous literature has paid little attention to part-time students and the intersectional use of GenAI between education and business.",
+      "key_terms": [
+        "generative",
+        "usage",
+        "university",
+        "students",
+        "navigating",
+        "education",
+        "business",
+        "investigates"
+      ],
+      "paper_type": "Methodology / framework paper",
+      "url": "http://arxiv.org/abs/2602.16307v1",
+      "source": "arXiv",
+      "citation_count": null,
+      "publication_type": null,
+      "relevance_score": 3,
+      "relevance_reason": "Score based on query match 2/4, purpose match 0/3, audience match 0/1, paper type fit 0/1, source completeness 1/1."
+    },
+    {
+      "title": "Rich Screen Reader Experiences for Accessible Data Visualization",
+      "summary": "Current web accessibility guidelines ask visualization designers to support screen readers via basic non-visual alternatives like textual descriptions and access to raw data tables. But charts do more than summarize data or reproduce tables; they afford interactive data exploration at varying levels of granularity -- from fine-grained datum-by-datum reading to skimming and surfacing high-level trends.",
+      "key_terms": [
+        "screen",
+        "reader",
+        "experiences",
+        "accessible",
+        "visualization",
+        "accessibility",
+        "guidelines",
+        "designers"
+      ],
+      "paper_type": "Methodology / framework paper",
+      "url": "http://arxiv.org/abs/2205.04917v1",
+      "source": "arXiv",
+      "citation_count": null,
+      "publication_type": null,
+      "relevance_score": 2,
+      "relevance_reason": "Score based on query match 1/4, purpose match 0/3, audience match 0/1, paper type fit 0/1, source completeness 1/1."
+    },
+    {
+      "title": "Using Elm to Introduce Algebraic Thinking to K-8 Students",
+      "summary": "In recent years, there has been increasing interest in developing a Computer Science curriculum for K-8 students. However, there have been significant barriers to creating and deploying a Computer Science curriculum in many areas, including teacher time and the prioritization of other 21st-century skills.",
+      "key_terms": [
+        "introduce",
+        "algebraic",
+        "thinking",
+        "students",
+        "recent",
+        "there",
+        "increasing",
+        "interest"
+      ],
+      "paper_type": "Experimental / empirical study",
+      "url": "http://arxiv.org/abs/1805.05125v1",
+      "source": "arXiv",
+      "citation_count": null,
+      "publication_type": null,
+      "relevance_score": 2,
+      "relevance_reason": "Score based on query match 1/4, purpose match 0/3, audience match 0/1, paper type fit 0/1, source completeness 1/1."
     }
   ]
 }

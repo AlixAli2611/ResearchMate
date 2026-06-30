@@ -22,10 +22,16 @@ def test_save_markdown_report_creates_file(tmp_path):
             title="AI Tutors in Higher Education",
             summary="This paper discusses AI tutors and higher education.",
             key_terms=["ai", "tutors", "higher", "education"],
+            paper_type="Review / survey paper",
             url="https://arxiv.org/example",
             source="arXiv",
+            citation_count=12,
+            publication_type="Review",
             relevance_score=8,
-            relevance_reason="Score based on query, purpose, audience, and source completeness.",
+            relevance_reason=(
+                "Score based on query match, purpose match, audience match, "
+                "paper type fit, and source completeness."
+            ),
         )
     ]
 
@@ -46,6 +52,8 @@ def test_save_markdown_report_creates_file(tmp_path):
     content = output_file.read_text(encoding="utf-8")
     assert "ResearchMate Research Briefing" in content
     assert "AI tutors in higher education" in content
+    assert "Review / survey paper" in content
+    assert "Citation count" in content
     assert "Evidence appears useful" in content
 
 
@@ -69,10 +77,16 @@ def test_save_json_results_creates_file(tmp_path):
             title="AI Tutors in Higher Education",
             summary="This paper discusses AI tutors and higher education.",
             key_terms=["ai", "tutors", "higher", "education"],
+            paper_type="Review / survey paper",
             url="https://arxiv.org/example",
-            source="arXiv",
+            source="Semantic Scholar",
+            citation_count=12,
+            publication_type="Review",
             relevance_score=8,
-            relevance_reason="Score based on query, purpose, audience, and source completeness.",
+            relevance_reason=(
+                "Score based on query match, purpose match, audience match, "
+                "paper type fit, and source completeness."
+            ),
         )
     ]
 
@@ -93,4 +107,6 @@ def test_save_json_results_creates_file(tmp_path):
     content = output_file.read_text(encoding="utf-8")
     assert "AI tutors in higher education" in content
     assert "ranked_papers" in content
+    assert "Review / survey paper" in content
+    assert "Semantic Scholar" in content
     assert "Evidence appears useful" in content
