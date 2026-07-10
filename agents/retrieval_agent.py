@@ -1,3 +1,5 @@
+import asyncio
+
 import arxiv
 import requests
 
@@ -157,6 +159,9 @@ def create_retrieval_note(
 def retrieve_arxiv_papers(query: str, max_results: int) -> list[Paper]:
     """
     Retrieve papers from arXiv.
+
+    This function is synchronous because the arXiv package is synchronous.
+    It is executed concurrently through asyncio.to_thread().
     """
     client = arxiv.Client(
         page_size=max_results,
@@ -214,7 +219,10 @@ def retrieve_semantic_scholar_papers(query: str, max_results: int) -> list[Paper
     for item in data:
         title = item.get("title") or "Untitled Semantic Scholar result"
         abstract = item.get("abstract") or "No abstract available from Semantic Scholar."
-        authors = [author.get("name", "Unknown Author") for author in item.get("authors", [])]
+        authors = [
+            author.get("name", "Unknown Author")
+            for author in item.get("authors", [])
+        ]
         publication_types = item.get("publicationTypes") or []
 
         papers.append(
@@ -293,6 +301,62 @@ def retrieve_openalex_papers(query: str, max_results: int) -> list[Paper]:
     return papers
 
 
+async def retrieve_source_async(
+    source_name: str,
+    retrieval_function,
+    query: str,
+    max_results: int,
+) -> tuple[str, list[Paper], str | None]:
+    """
+    Run one synchronous retrieval function concurrently in a worker thread.
+
+    Returns the source name, retrieved papers, and an optional error message.
+    """
+    try:
+        papers = await asyncio.to_thread(retrieval_function, query, max_results)
+        return source_name, papers, None
+    except Exception as error:
+        return source_name, [], f"{source_name} failed: {error}"
+
+
+async def retrieve_all_sources_async(
+    query: str,
+    max_results: int,
+) -> tuple[list[Paper], list[str], list[str]]:
+    """
+    Retrieve papers from all sources concurrently.
+
+    This demonstrates asynchronous execution while keeping each individual
+    retrieval function simple and easy to test.
+    """
+    retrieval_tasks = [
+        retrieve_source_async("arXiv", retrieve_arxiv_papers, query, max_results),
+        retrieve_source_async(
+            "Semantic Scholar",
+            retrieve_semantic_scholar_papers,
+            query,
+            max_results,
+        ),
+        retrieve_source_async("OpenAlex", retrieve_openalex_papers, query, max_results),
+    ]
+
+    results = await asyncio.gather(*retrieval_tasks)
+
+    all_papers = []
+    sources_used = []
+    errors = []
+
+    for source_name, papers, error in results:
+        if papers:
+            all_papers.extend(papers)
+            sources_used.append(source_name)
+
+        if error:
+            errors.append(error)
+
+    return all_papers, sources_used, errors
+
+
 def deduplicate_papers(papers: list[Paper]) -> list[Paper]:
     """
     Deduplicate papers by normalised title.
@@ -365,40 +429,35 @@ def clean_retrieval_errors(errors: list[str]) -> list[str]:
     return cleaned_errors
 
 
+def run_async_retrieval(query: str, max_results: int) -> tuple[list[Paper], list[str], list[str]]:
+    """
+    Run the asynchronous retrieval workflow from synchronous application code.
+
+    main.py is a normal command-line script, so this wrapper allows the app to
+    use asyncio without making the entire application asynchronous.
+    """
+    return asyncio.run(
+        retrieve_all_sources_async(
+            query=query,
+            max_results=max_results,
+        )
+    )
+
+
 def retrieve_papers(query: str, max_results: int = 5) -> tuple[list[Paper], str]:
     """
     Retrieve academic papers from arXiv, Semantic Scholar, and OpenAlex.
 
-    The function attempts multiple sources so that the prototype is closer to the
-    original ResearchMate design while still remaining simple enough to run and test.
+    The Retrieval Agent queries multiple academic APIs concurrently using
+    asyncio, then deduplicates and balances the result set across sources.
     """
     if not query or not query.strip():
         raise ValueError("A research query is required for retrieval.")
 
-    all_papers = []
-    sources_attempted = []
-    errors = []
-
-    try:
-        arxiv_papers = retrieve_arxiv_papers(query, max_results)
-        all_papers.extend(arxiv_papers)
-        sources_attempted.append("arXiv")
-    except Exception as error:
-        errors.append(f"arXiv failed: {error}")
-
-    try:
-        semantic_papers = retrieve_semantic_scholar_papers(query, max_results)
-        all_papers.extend(semantic_papers)
-        sources_attempted.append("Semantic Scholar")
-    except Exception as error:
-        errors.append(f"Semantic Scholar failed: {error}")
-
-    try:
-        openalex_papers = retrieve_openalex_papers(query, max_results)
-        all_papers.extend(openalex_papers)
-        sources_attempted.append("OpenAlex")
-    except Exception as error:
-        errors.append(f"OpenAlex failed: {error}")
+    all_papers, sources_used, errors = run_async_retrieval(
+        query=query,
+        max_results=max_results,
+    )
 
     unique_papers = deduplicate_papers(all_papers)
     selected_papers = select_balanced_papers(unique_papers, max_results)
@@ -412,7 +471,7 @@ def retrieve_papers(query: str, max_results: int = 5) -> tuple[list[Paper], str]
             requested_count=max_results,
             retrieved_count=len(fallback_papers),
             query=query,
-            sources_used=sources_attempted or ["arXiv", "Semantic Scholar", "OpenAlex"],
+            sources_used=sources_used or ["arXiv", "Semantic Scholar", "OpenAlex"],
             used_fallback=True,
         )
         return fallback_papers, fallback_note
@@ -421,7 +480,13 @@ def retrieve_papers(query: str, max_results: int = 5) -> tuple[list[Paper], str]
         requested_count=max_results,
         retrieved_count=len(selected_papers),
         query=query,
-        sources_used=sources_attempted,
+        sources_used=sources_used,
+    )
+
+    retrieval_note += (
+        "\n\nRetrieval method: arXiv, Semantic Scholar, and OpenAlex were queried "
+        "concurrently using asyncio. Results were deduplicated and balanced across "
+        "available sources."
     )
 
     if errors:
