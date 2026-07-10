@@ -4,6 +4,7 @@ from agents.retrieval_agent import retrieve_papers
 from agents.processing_agent import process_papers
 from agents.ranking_agent import rank_papers, assess_evidence_consistency
 from agents.storage_agent import save_markdown_report, save_json_results
+from agents.database_agent import save_run_to_database
 
 
 def get_requested_paper_count() -> int:
@@ -12,7 +13,9 @@ def get_requested_paper_count() -> int:
 
     The value is capped to keep the prototype manageable.
     """
-    user_input = input("How many papers should ResearchMate retrieve? Default is 5, maximum is 20: ").strip()
+    user_input = input(
+        "How many papers should ResearchMate retrieve? Default is 5, maximum is 20: "
+    ).strip()
 
     if not user_input:
         return 5
@@ -37,19 +40,26 @@ def get_requested_paper_count() -> int:
 def main():
     """
     Run the ResearchMate prototype from the command line.
+
+    The prototype receives a research goal, creates a plan, retrieves academic
+    sources, processes and ranks them, assesses the evidence, and saves outputs
+    as Markdown, JSON, and SQLite records.
     """
     print("ResearchMate: Academic Research Planning Agent")
     print("---------------------------------------------")
 
     query = input("Enter your academic research topic or question: ").strip()
+
     purpose = input(
         "Enter your research purpose, for example course design, literature review, "
         "background research, assignment, or personal study: "
     ).strip()
+
     audience_level = input(
         "Enter the intended audience or level, for example undergraduate, masters, "
         "doctoral, professional, or general audience: "
     ).strip()
+
     requested_papers = get_requested_paper_count()
 
     context = ResearchContext(
@@ -93,7 +103,7 @@ def main():
         print(f"   Paper type: {paper.paper_type}")
         print(f"   Source: {paper.source}")
         print(
-            f"   Citation count: "
+            "   Citation count: "
             f"{paper.citation_count if paper.citation_count is not None else 'Not available'}"
         )
         print(f"   Summary: {paper.summary}")
@@ -104,6 +114,7 @@ def main():
     print(evidence_note)
 
     print("\nSaving outputs...")
+
     markdown_path = save_markdown_report(
         context=context,
         plan=plan,
@@ -120,8 +131,17 @@ def main():
         evidence_note=evidence_note,
     )
 
+    database_path = save_run_to_database(
+        context=context,
+        plan=plan,
+        ranked_papers=ranked_papers,
+        retrieval_note=retrieval_note,
+        evidence_note=evidence_note,
+    )
+
     print(f"Markdown report saved to: {markdown_path}")
     print(f"JSON results saved to: {json_path}")
+    print(f"SQLite database saved to: {database_path}")
 
     print("\nDone.")
 
