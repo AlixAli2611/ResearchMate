@@ -112,6 +112,25 @@ def calculate_paper_type_score(purpose: str, paper_type: str) -> int:
     return 0
 
 
+def get_recommendation_status(score: int) -> str:
+    """
+    Convert a relevance score into a recommendation label.
+
+    This helps distinguish between retrieved papers and papers that are actually
+    useful enough to recommend for the user's research goal.
+    """
+    if score >= 8:
+        return "Strongly recommended"
+
+    if score >= 6:
+        return "Recommended"
+
+    if score >= 4:
+        return "Use with caution"
+
+    return "Not recommended"
+
+
 def calculate_relevance_score_fallback(
     context: ResearchContext,
     paper: ProcessedPaper,
@@ -264,6 +283,7 @@ Rules:
 - Do not invent full-text findings.
 - Be strict but fair.
 - If information is unclear, give a lower score for the affected category.
+- If query_match, purpose_match, and paper_type_fit are all low, the paper should receive a low total score.
 - The explanation should be 1 to 2 sentences and should mention the user's purpose.
 
 Return only valid JSON in this exact structure:
@@ -317,6 +337,7 @@ def rank_papers(
 
     for paper in processed_papers:
         score, reason = calculate_relevance_score(context, paper)
+        recommendation_status = get_recommendation_status(score)
 
         ranked_papers.append(
             RankedPaper(
@@ -330,6 +351,7 @@ def rank_papers(
                 publication_type=paper.publication_type,
                 relevance_score=score,
                 relevance_reason=reason,
+                recommendation_status=recommendation_status,
             )
         )
 
@@ -365,36 +387,49 @@ def assess_evidence_consistency_fallback(
             "as a demonstration of the pipeline, not as a reliable research briefing."
         )
 
-    strong_papers = [
+    recommended_papers = [
         paper for paper in ranked_papers
-        if paper.relevance_score >= 7
+        if paper.recommendation_status in ["Strongly recommended", "Recommended"]
     ]
 
-    moderate_papers = [
+    caution_papers = [
         paper for paper in ranked_papers
-        if 4 <= paper.relevance_score < 7
+        if paper.recommendation_status == "Use with caution"
     ]
 
-    if len(strong_papers) >= 3:
+    not_recommended_papers = [
+        paper for paper in ranked_papers
+        if paper.recommendation_status == "Not recommended"
+    ]
+
+    if len(recommended_papers) >= 3:
         return (
             f"Evidence appears strong for the purpose '{context.purpose}' at the "
             f"'{context.audience_level}' level because several retrieved papers "
-            "scored highly against the query, purpose, audience, paper type, and source criteria. "
-            "The user should still read the original papers before making academic claims."
+            "were recommended by the ranking agent. The user should still read the "
+            "original papers before making academic claims."
         )
 
-    if strong_papers or len(moderate_papers) >= 3:
+    if recommended_papers or len(caution_papers) >= 3:
         return (
             f"Evidence appears moderately useful for the purpose '{context.purpose}' "
-            f"at the '{context.audience_level}' level. Some sources are relevant, "
+            f"at the '{context.audience_level}' level. Some sources may be useful, "
             "but the user should review the original papers and consider additional "
             "searches before drawing strong conclusions."
         )
 
+    if len(not_recommended_papers) == len(ranked_papers):
+        return (
+            f"Evidence appears weak for the purpose '{context.purpose}' at the "
+            f"'{context.audience_level}' level because the retrieved papers were "
+            "not recommended by the ranking agent. The user should refine the query "
+            "or try broader search terms."
+        )
+
     return (
-        f"Evidence appears weak or mixed for the purpose '{context.purpose}' at the "
-        f"'{context.audience_level}' level. The retrieved papers may not be closely "
-        "aligned with the user's research goal, so the query should be refined."
+        f"Evidence appears mixed for the purpose '{context.purpose}' at the "
+        f"'{context.audience_level}' level. The user should inspect the recommended "
+        "and caution-level sources before relying on the result set."
     )
 
 
@@ -419,6 +454,7 @@ def assess_evidence_consistency_with_llm(
                 "rank": index,
                 "title": paper.title,
                 "score": paper.relevance_score,
+                "recommendation_status": paper.recommendation_status,
                 "paper_type": paper.paper_type,
                 "source": paper.source,
                 "summary": paper.summary,
@@ -443,6 +479,7 @@ Rules:
 - Do not invent findings beyond the summaries provided.
 - Be cautious and mention when evidence is limited, mixed, or based mainly on abstracts.
 - Mention whether the source set seems strong, moderate, weak, limited, or mixed for the user's purpose.
+- If most papers are marked "Not recommended", clearly say the query should be refined or additional searches are needed.
 - Keep the note to 2 to 4 sentences.
 
 Return only valid JSON in this exact structure:

@@ -43,6 +43,33 @@ def get_fallback_papers(query: str) -> list[Paper]:
     ]
 
 
+def reconstruct_openalex_abstract(abstract_inverted_index: dict | None) -> str:
+    """
+    Reconstruct an OpenAlex abstract from its inverted-index format.
+
+    OpenAlex often returns abstracts as an inverted index rather than a plain
+    text string. This function rebuilds a readable abstract when possible.
+    """
+    if not abstract_inverted_index:
+        return "No abstract available from OpenAlex."
+
+    word_positions = []
+
+    for word, positions in abstract_inverted_index.items():
+        for position in positions:
+            word_positions.append((position, word))
+
+    if not word_positions:
+        return "No abstract available from OpenAlex."
+
+    sorted_words = [
+        word
+        for _, word in sorted(word_positions, key=lambda item: item[0])
+    ]
+
+    return " ".join(sorted_words)
+
+
 def suggest_related_topics(query: str) -> list[str]:
     """
     Suggest broader or related search directions when retrieval is limited.
@@ -206,6 +233,66 @@ def retrieve_semantic_scholar_papers(query: str, max_results: int) -> list[Paper
     return papers
 
 
+def retrieve_openalex_papers(query: str, max_results: int) -> list[Paper]:
+    """
+    Retrieve papers from OpenAlex.
+
+    OpenAlex adds a third academic metadata source and can provide citation
+    counts, publication years, work types, DOI links, and reconstructed abstracts.
+    """
+    url = "https://api.openalex.org/works"
+
+    params = {
+        "search": query.strip(),
+        "per-page": max_results,
+        "select": (
+            "display_name,authorships,abstract_inverted_index,id,doi,"
+            "publication_year,cited_by_count,type"
+        ),
+    }
+
+    response = requests.get(url, params=params, timeout=20)
+    response.raise_for_status()
+
+    results = response.json().get("results", [])
+
+    papers = []
+
+    for item in results:
+        title = item.get("display_name") or "Untitled OpenAlex result"
+
+        authors = []
+        for authorship in item.get("authorships", []):
+            author = authorship.get("author", {})
+            author_name = author.get("display_name")
+
+            if author_name:
+                authors.append(author_name)
+
+        abstract = reconstruct_openalex_abstract(
+            item.get("abstract_inverted_index")
+        )
+
+        doi = item.get("doi")
+        openalex_id = item.get("id")
+        url_value = doi or openalex_id or "https://openalex.org/"
+
+        papers.append(
+            Paper(
+                title=title,
+                authors=authors,
+                abstract=abstract,
+                url=url_value,
+                published=str(item.get("publication_year")) if item.get("publication_year") else None,
+                source="OpenAlex",
+                citation_count=item.get("cited_by_count"),
+                publication_type=item.get("type"),
+            )
+        )
+
+    return papers
+
+
 def deduplicate_papers(papers: list[Paper]) -> list[Paper]:
     """
     Deduplicate papers by normalised title.
@@ -226,9 +313,61 @@ def deduplicate_papers(papers: list[Paper]) -> list[Paper]:
     return unique_papers
 
 
+def select_balanced_papers(papers: list[Paper], max_results: int) -> list[Paper]:
+    """
+    Select papers in a balanced way across retrieval sources.
+
+    Without this, one source such as arXiv can dominate the final result list.
+    Balanced selection gives Semantic Scholar and OpenAlex a fair chance to
+    contribute useful sources.
+    """
+    papers_by_source = {}
+
+    for paper in papers:
+        papers_by_source.setdefault(paper.source, []).append(paper)
+
+    selected_papers = []
+    source_names = list(papers_by_source.keys())
+
+    while len(selected_papers) < max_results:
+        added_this_round = False
+
+        for source_name in source_names:
+            source_papers = papers_by_source[source_name]
+
+            if source_papers:
+                selected_papers.append(source_papers.pop(0))
+                added_this_round = True
+
+                if len(selected_papers) >= max_results:
+                    break
+
+        if not added_this_round:
+            break
+
+    return selected_papers
+
+
+def clean_retrieval_errors(errors: list[str]) -> list[str]:
+    """
+    Convert technical retrieval errors into presentation-friendly warnings.
+    """
+    cleaned_errors = []
+
+    for error in errors:
+        if "429" in error:
+            cleaned_errors.append(
+                "One retrieval source was rate-limited during this run, so the system continued using available results from other sources."
+            )
+        else:
+            cleaned_errors.append(error)
+
+    return cleaned_errors
+
+
 def retrieve_papers(query: str, max_results: int = 5) -> tuple[list[Paper], str]:
     """
-    Retrieve academic papers from arXiv and Semantic Scholar.
+    Retrieve academic papers from arXiv, Semantic Scholar, and OpenAlex.
 
     The function attempts multiple sources so that the prototype is closer to the
     original ResearchMate design while still remaining simple enough to run and test.
@@ -254,8 +393,15 @@ def retrieve_papers(query: str, max_results: int = 5) -> tuple[list[Paper], str]
     except Exception as error:
         errors.append(f"Semantic Scholar failed: {error}")
 
+    try:
+        openalex_papers = retrieve_openalex_papers(query, max_results)
+        all_papers.extend(openalex_papers)
+        sources_attempted.append("OpenAlex")
+    except Exception as error:
+        errors.append(f"OpenAlex failed: {error}")
+
     unique_papers = deduplicate_papers(all_papers)
-    selected_papers = unique_papers[:max_results]
+    selected_papers = select_balanced_papers(unique_papers, max_results)
 
     if not selected_papers:
         for error in errors:
@@ -266,7 +412,7 @@ def retrieve_papers(query: str, max_results: int = 5) -> tuple[list[Paper], str]
             requested_count=max_results,
             retrieved_count=len(fallback_papers),
             query=query,
-            sources_used=sources_attempted or ["arXiv", "Semantic Scholar"],
+            sources_used=sources_attempted or ["arXiv", "Semantic Scholar", "OpenAlex"],
             used_fallback=True,
         )
         return fallback_papers, fallback_note
@@ -279,18 +425,9 @@ def retrieve_papers(query: str, max_results: int = 5) -> tuple[list[Paper], str]
     )
 
     if errors:
-    cleaned_errors = []
-
-    for error in errors:
-        if "429" in error:
-            cleaned_errors.append(
-                "One retrieval source was rate-limited during this run, so the system continued using available results from other sources."
-            )
-        else:
-            cleaned_errors.append(error)
-
-    retrieval_note += "\n\nRetrieval warnings:\n" + "\n".join(
-        f"- {error}" for error in cleaned_errors
-    )
+        cleaned_errors = clean_retrieval_errors(errors)
+        retrieval_note += "\n\nRetrieval warnings:\n" + "\n".join(
+            f"- {error}" for error in cleaned_errors
+        )
 
     return selected_papers, retrieval_note

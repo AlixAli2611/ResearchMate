@@ -58,13 +58,9 @@ class ProcessedPaper(BaseModel):
 
 
 class RankedPaper(ProcessedPaper):
-    """
-    Processed paper with relevance scoring and an explanation.
-
-    The score is out of 10 so the user can interpret it more easily.
-    """
     relevance_score: int
     relevance_reason: str
+    recommendation_status: str
 
 
 class ResearchReport(BaseModel):

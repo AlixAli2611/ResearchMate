@@ -8,11 +8,14 @@ from agents.storage_agent import save_markdown_report, save_json_results
 
 def get_requested_paper_count() -> int:
     """
-    Ask the user how many papers they want to retrieve.
+    Ask the user how many papers to retrieve.
 
-    The value is capped to keep the prototype responsive during demonstration.
+    The value is capped to keep the prototype manageable.
     """
-    user_input = input("How many papers should be retrieved? Recommended: 5-10. ")
+    user_input = input("How many papers should ResearchMate retrieve? Default is 5, maximum is 20: ").strip()
+
+    if not user_input:
+        return 5
 
     try:
         requested_count = int(user_input)
@@ -21,88 +24,85 @@ def get_requested_paper_count() -> int:
         return 5
 
     if requested_count < 1:
-        print("Number too low. Using default of 5 papers.")
+        print("Requested paper count must be at least 1. Using default of 5 papers.")
         return 5
 
     if requested_count > 20:
-        print("Number too high for this prototype. Capping retrieval at 20 papers.")
+        print("Requested paper count capped at 20 for this prototype.")
         return 20
 
     return requested_count
 
 
-def get_research_context() -> ResearchContext:
+def main():
     """
-    Collect the user's research context.
-
-    Asking for purpose and level makes the system more goal-aware. The same topic
-    may require different sources depending on whether the user is designing a
-    course, writing a literature review, or completing an assignment.
+    Run the ResearchMate prototype from the command line.
     """
-    query = input("Enter your academic research topic: ")
+    print("ResearchMate: Academic Research Planning Agent")
+    print("---------------------------------------------")
 
-    print("\nWhat is the purpose of your research?")
-    print("Examples: course design, literature review, background research, assignment, personal study")
-    purpose = input("Purpose: ")
-
-    print("\nWhat is the intended level or audience?")
-    print("Examples: undergraduate, masters, doctoral, professional, general audience")
-    audience_level = input("Level/audience: ")
-
+    query = input("Enter your academic research topic or question: ").strip()
+    purpose = input(
+        "Enter your research purpose, for example course design, literature review, "
+        "background research, assignment, or personal study: "
+    ).strip()
+    audience_level = input(
+        "Enter the intended audience or level, for example undergraduate, masters, "
+        "doctoral, professional, or general audience: "
+    ).strip()
     requested_papers = get_requested_paper_count()
 
-    return ResearchContext(
-        query=query.strip(),
-        purpose=purpose.strip(),
-        audience_level=audience_level.strip(),
+    context = ResearchContext(
+        query=query,
+        purpose=purpose,
+        audience_level=audience_level,
         requested_papers=requested_papers,
     )
 
-
-def main() -> None:
-    print("ResearchMate: Academic Research Planning Agent")
-    print("-" * 50)
-
-    context = get_research_context()
-
+    print("\nCreating research plan...")
     plan = create_plan(context)
 
-    print("\nGenerated Research Plan:")
+    print("\nGenerated Plan:")
     for index, step in enumerate(plan.steps, start=1):
         print(f"{index}. {step}")
 
-    print("\nRetrieving academic papers from arXiv...")
-    papers, retrieval_note = retrieve_papers(context.query, max_results=context.requested_papers)
+    print("\nRetrieving academic papers...")
+    papers, retrieval_note = retrieve_papers(
+        query=context.query,
+        max_results=context.requested_papers,
+    )
 
-    print(f"\nRetrieved {len(papers)} papers:")
-    for index, paper in enumerate(papers, start=1):
-        print(f"\n{index}. {paper.title}")
-        print(f"   Source: {paper.source}")
-        print(f"   URL: {paper.url}")
+    print(f"\nRetrieved {len(papers)} papers.")
+    print(retrieval_note)
 
-    print("\n" + retrieval_note)
-
-    print("\nProcessing retrieved papers...")
+    print("\nProcessing papers...")
     processed_papers = process_papers(papers, context)
 
-    print("\nRanking papers by relevance to your topic, purpose, and audience...")
+    print("\nRanking papers...")
     ranked_papers = rank_papers(context, processed_papers)
+
+    print("\nAssessing evidence...")
     evidence_note = assess_evidence_consistency(context, ranked_papers)
 
-    print(f"\nRanked {len(ranked_papers)} papers:")
+    print("\nRanked Papers:")
     for index, paper in enumerate(ranked_papers, start=1):
         print(f"\n{index}. {paper.title}")
         print(f"   Relevance score: {paper.relevance_score}/10")
+        print(f"   Recommendation status: {paper.recommendation_status}")
         print(f"   Reason: {paper.relevance_reason}")
         print(f"   Paper type: {paper.paper_type}")
         print(f"   Source: {paper.source}")
-        print(f"   Citation count: {paper.citation_count if paper.citation_count is not None else 'Not available'}")
+        print(
+            f"   Citation count: "
+            f"{paper.citation_count if paper.citation_count is not None else 'Not available'}"
+        )
         print(f"   Summary: {paper.summary}")
         print(f"   Key terms: {', '.join(paper.key_terms)}")
         print(f"   URL: {paper.url}")
 
-    print("\nEvidence consistency note:")
+    print("\nEvidence Note:")
     print(evidence_note)
+
     print("\nSaving outputs...")
     markdown_path = save_markdown_report(
         context=context,
@@ -122,6 +122,8 @@ def main() -> None:
 
     print(f"Markdown report saved to: {markdown_path}")
     print(f"JSON results saved to: {json_path}")
+
+    print("\nDone.")
 
 
 if __name__ == "__main__":

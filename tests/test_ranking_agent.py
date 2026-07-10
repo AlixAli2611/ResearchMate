@@ -4,7 +4,15 @@ from agents.ranking_agent import (
     assess_evidence_consistency,
     validate_llm_ranking_output,
     calculate_relevance_score_fallback,
+    get_recommendation_status,
 )
+
+
+def test_get_recommendation_status_returns_expected_labels():
+    assert get_recommendation_status(9) == "Strongly recommended"
+    assert get_recommendation_status(7) == "Recommended"
+    assert get_recommendation_status(5) == "Use with caution"
+    assert get_recommendation_status(2) == "Not recommended"
 
 
 def test_rank_papers_scores_relevant_paper_higher():
@@ -46,6 +54,12 @@ def test_rank_papers_scores_relevant_paper_higher():
     assert ranked[0].relevance_score >= ranked[1].relevance_score
     assert 0 <= ranked[0].relevance_score <= 10
     assert ranked[0].relevance_reason
+    assert ranked[0].recommendation_status in [
+        "Strongly recommended",
+        "Recommended",
+        "Use with caution",
+        "Not recommended",
+    ]
 
 
 def test_validate_llm_ranking_output_accepts_valid_score_breakdown():

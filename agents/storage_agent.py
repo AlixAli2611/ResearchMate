@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+
 from models import ResearchContext, ResearchPlan, RankedPaper
 
 
@@ -12,25 +13,23 @@ def save_markdown_report(
     output_path: str = "outputs/research_report.md",
 ) -> str:
     """
-    Save a human-readable Markdown research report.
-
-    Markdown was chosen because it is lightweight, easy to inspect, and suitable
-    for demonstrating the system output without requiring extra PDF generation
-    dependencies.
+    Save the research briefing as a Markdown report.
     """
-    path = Path(output_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    output_file = Path(output_path)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
 
     lines = [
         "# ResearchMate Research Briefing",
         "",
         "## Research Context",
-        f"- **Topic:** {context.query}",
+        "",
+        f"- **Research topic/query:** {context.query}",
         f"- **Purpose:** {context.purpose}",
-        f"- **Audience/Level:** {context.audience_level}",
+        f"- **Audience/level:** {context.audience_level}",
         f"- **Requested papers:** {context.requested_papers}",
         "",
         "## Generated Research Plan",
+        "",
     ]
 
     for index, step in enumerate(plan.steps, start=1):
@@ -40,18 +39,21 @@ def save_markdown_report(
         [
             "",
             "## Retrieval Note",
+            "",
             retrieval_note,
             "",
             "## Ranked Sources",
+            "",
         ]
     )
 
     for index, paper in enumerate(ranked_papers, start=1):
         lines.extend(
             [
-                "",
                 f"### {index}. {paper.title}",
+                "",
                 f"- **Relevance score:** {paper.relevance_score}/10",
+                f"- **Recommendation status:** {paper.recommendation_status}",
                 f"- **Relevance reason:** {paper.relevance_reason}",
                 f"- **Paper type:** {paper.paper_type}",
                 f"- **Source:** {paper.source}",
@@ -60,27 +62,42 @@ def save_markdown_report(
                 f"- **URL:** {paper.url}",
                 f"- **Key terms:** {', '.join(paper.key_terms)}",
                 "",
-                f"**Source-level summary:** {paper.summary}",
+                "**Source-level summary:**",
+                "",
+                paper.summary,
+                "",
             ]
         )
 
     lines.extend(
         [
-            "",
             "## Evidence Consistency Note",
+            "",
             evidence_note,
             "",
-            "## Human Review Reminder",
+            "## Limitations",
+            "",
             (
-                "ResearchMate organises and ranks retrieved academic sources, but it does "
-                "not replace human academic judgement. Source-level summaries should be "
-                "checked against the original papers before being used in formal work."
+                "This prototype uses academic metadata, abstracts, and structured LLM-assisted "
+                "analysis. Paper type classification, key term extraction, ranking, and evidence "
+                "assessment should be checked against the original sources. The system organises "
+                "and prioritises sources; it does not replace academic judgement or full-text review."
             ),
+            "",
+            "## Human Review Reminder",
+            "",
+            (
+                "Users should read the original papers before relying on any findings, claims, "
+                "or recommendations. Low-scoring and not-recommended papers are retained for "
+                "transparency but should not be treated as strong evidence for the user's goal."
+            ),
+            "",
         ]
     )
 
-    path.write_text("\n".join(lines), encoding="utf-8")
-    return str(path)
+    output_file.write_text("\n".join(lines), encoding="utf-8")
+
+    return str(output_file)
 
 
 def save_json_results(
@@ -92,24 +109,32 @@ def save_json_results(
     output_path: str = "outputs/results.json",
 ) -> str:
     """
-    Save a machine-readable JSON record of the system output.
-
-    JSON is useful for testing, debugging, and demonstrating that the system
-    produces structured outputs in addition to a readable report.
+    Save the research briefing as structured JSON.
     """
-    path = Path(output_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
+    output_file = Path(output_path)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
 
     data = {
         "query": context.query,
         "purpose": context.purpose,
         "audience_level": context.audience_level,
         "requested_papers": context.requested_papers,
-        "plan": plan.steps,
+        "plan": plan.model_dump(),
         "retrieval_note": retrieval_note,
         "evidence_note": evidence_note,
-        "ranked_papers": [paper.model_dump() for paper in ranked_papers],
+        "ranked_papers": [
+            paper.model_dump()
+            for paper in ranked_papers
+        ],
+        "limitations": (
+            "This prototype uses academic metadata, abstracts, and structured LLM-assisted "
+            "analysis. Outputs should be checked against original sources before academic use."
+        ),
     }
 
-    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-    return str(path)
+    output_file.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    return str(output_file)

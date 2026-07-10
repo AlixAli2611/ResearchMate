@@ -32,6 +32,7 @@ def test_save_markdown_report_creates_file(tmp_path):
                 "Score based on query match, purpose match, audience match, "
                 "paper type fit, and source completeness."
             ),
+            recommendation_status="Strongly recommended",
         )
     ]
 
@@ -54,7 +55,10 @@ def test_save_markdown_report_creates_file(tmp_path):
     assert "AI tutors in higher education" in content
     assert "Review / survey paper" in content
     assert "Citation count" in content
+    assert "Recommendation status" in content
+    assert "Strongly recommended" in content
     assert "Evidence appears useful" in content
+    assert "Limitations" in content
 
 
 def test_save_json_results_creates_file(tmp_path):
@@ -87,6 +91,7 @@ def test_save_json_results_creates_file(tmp_path):
                 "Score based on query match, purpose match, audience match, "
                 "paper type fit, and source completeness."
             ),
+            recommendation_status="Strongly recommended",
         )
     ]
 
@@ -109,4 +114,6 @@ def test_save_json_results_creates_file(tmp_path):
     assert "ranked_papers" in content
     assert "Review / survey paper" in content
     assert "Semantic Scholar" in content
+    assert "Strongly recommended" in content
+    assert "recommendation_status" in content
     assert "Evidence appears useful" in content
